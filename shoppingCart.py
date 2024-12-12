@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 # Set colors and page configuration
-color1 = ['#330000', '#252526', '#0487D9', '#F29F05', '#F2E0DF']
+color1 = ['#330000','#252526','#0487D9','#F29F05','#F2E0DF']
 
 st.set_page_config(
     layout='wide',
@@ -11,27 +11,15 @@ st.set_page_config(
     page_icon='🛒'
 )
 
-# Load CSV with error handling
-try:
-    df = pd.read_csv("shopping_cart.csv")
-except Exception as e:
-    st.error(f"Error loading CSV: {e}")
-    st.stop()
-
-# Convert columns to appropriate types and handle missing values
-df['order_date'] = pd.to_datetime(df['order_date'], errors='coerce')
-df['differnce'] = pd.to_numeric(df['differnce'], errors='coerce')
-df = df.dropna(subset=['order_date', 'differnce'])
-
-# Sidebar checkbox to show data
 x = st.sidebar.checkbox('Show Data', False, key=1)
+
+df = pd.read_csv("shopping_cart.csv")
 
 st.markdown('<h1 style="text-align: center; color: black;">Home Page For Dashboard</h1>', unsafe_allow_html=True)
 
 if x:
     st.dataframe(df.copy(), height=500, width=1000)
 
-# Tabs for analysis
 tab1, tab2 = st.tabs(["📊 Univariate", "📈 Bivariate"])
 
 with tab1:
@@ -41,82 +29,67 @@ with tab1:
 
     # Gender Distribution
     fig = px.histogram(
-        df,
-        x='gender',
-        color_discrete_sequence=color1,
-        title='Distribution of Gender',
-        text_auto=True
+        df, 
+        x='gender', 
+        color_discrete_sequence=color1, 
+        title='Distribution of Gender',text_auto=True
     )
     col1.plotly_chart(fig, use_container_width=True)
 
-    # Boxplot for difference
     fig = px.box(
-        df,
-        x='differnce',
-        color_discrete_sequence=color1,
+        df, 
+        x='differnce', 
+        color_discrete_sequence=color1, 
         title='Difference Between Delivery and Order Date'
     )
     col3.plotly_chart(fig, use_container_width=True)
-
-    # Bar chart for best delivery day by state
-    state = col1.radio('Select state', df['state'].unique(), horizontal=True)
+    
+    state= col1.radio('Select state', df['state'].unique(),horizontal=True)
     new_df2 = df[df['state'] == state]
     fig = px.bar(new_df2, x='name_day_delivery', color_discrete_sequence=color1, title='Best Delivery Day')
     col1.plotly_chart(fig, use_container_width=True)
-
-    # Sunburst chart for top 5 counting over country, city, and payment
+    
+    
     top_5_df = new_df2.groupby(['country', 'city', 'payment']).size().reset_index(name='count')
     top_5_df = top_5_df.groupby('country').apply(lambda x: x.nlargest(5, 'count')).reset_index(drop=True)
     top_5_df = top_5_df.groupby('city').apply(lambda x: x.nlargest(5, 'count')).reset_index(drop=True)
 
-    fig = px.sunburst(
-        top_5_df,
-        path=['country', 'city', 'payment'],
-        title='Top 5 Counting Over Country, City, and Payment',
-        height=600,
-        color_discrete_sequence=color1
-    )
+    fig = px.sunburst(top_5_df, path=['country', 'city', 'payment'],
+                      title='Top 5 Counting Over Country, City, and Payment',height=600 ,
+                      color_discrete_sequence=color1)
     col3.plotly_chart(fig, use_container_width=True)
+    
 
 with tab2:
     st.markdown('<h3 style="text-align: center; color: black;">Bivariate Analysis</h3>', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([5, 1, 5])
 
-    # Scatter plot for state vs payment
     fig = px.scatter(
-        df,
-        x='payment',
-        y='state',
-        title="Scatter Plot of State vs Payment",
+        df, 
+        x='payment', 
+        y='state', 
+        title="Scatter Plot of State vs Payment", 
         color_discrete_sequence=color1
     )
     col1.plotly_chart(fig, use_container_width=True)
 
-    # Boxplot for delivery time by payment
-    fig = px.box(
-        df,
-        x="payment",
-        y="delivery_date",
-        title="Delivery Time by Payment",
-        color_discrete_sequence=color1
-    )
+    fig = px.box(df, x="payment", y="delivery_date", title="Delivery Time by Payment",color_discrete_sequence=color1)
     col1.plotly_chart(fig, use_container_width=True)
 
-    # Line chart for mean difference over order dates
+    df['order_date'] = pd.to_datetime(df['order_date'], errors='coerce')
+    df['differnce'] = pd.to_numeric(df['differnce'], errors='coerce')
     df_1 = df.groupby('order_date').agg({'differnce': 'mean'}).reset_index()
 
     fig = px.line(
-        df_1,
-        x="order_date",
-        y='differnce',
-        title="Mean Difference Over Order Dates",
-        markers=dict(size=10, symbol='circle', color='navy'),
+        df_1, 
+        x="order_date", 
+        y='differnce', 
+        title="Mean Difference Over Order Dates", markers=dict(size=10, symbol='circle', color='navy'),
         color_discrete_sequence=color1
     )
     col3.plotly_chart(fig, use_container_width=True)
-
-    # Correlation heatmap
+    
     numeric_df = df.select_dtypes(include=['number'])
-    fig = px.imshow(numeric_df.corr(), title="Correlation Heatmap", color_continuous_scale='YlOrBr')
+    fig = px.imshow(numeric_df.corr(), title="Correlation Heatmap",color_continuous_scale='YlOrBr')
     col3.plotly_chart(fig, use_container_width=True)
