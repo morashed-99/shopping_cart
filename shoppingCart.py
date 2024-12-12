@@ -83,7 +83,7 @@ with tab2:
 
     fig = px.line(
         df_1, 
-        x="order_date", 
+        x="city", 
         y='differnce', 
         title="Mean Difference Over Order Dates", markers=dict(size=10, symbol='circle', color='navy'),
         color_discrete_sequence=color1
