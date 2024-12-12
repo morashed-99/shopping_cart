@@ -77,13 +77,11 @@ with tab2:
     fig = px.box(df, x="payment", y="delivery_date", title="Delivery Time by Payment",color_discrete_sequence=color1)
     col1.plotly_chart(fig, use_container_width=True)
 
-    df['order_date'] = pd.to_datetime(df['order_date'], errors='coerce')
-    df['differnce'] = pd.to_numeric(df['differnce'], errors='coerce')
+    df['order_date'] = pd.to_datetime(df['order_date'])
+    df['differnce'] = pd.to_numeric(df['differnce'])
     df_1 = df.groupby('order_date').agg({'differnce': 'mean'}).reset_index()
 
     fig = px.line(df_1, x="order_date", y="differnce", title="Mean Difference Over Order Dates", color_discrete_sequence=color1,markers=True)
-
-    fig.update_traces(marker=dict(size=10, symbol='circle', color='navy'))
 
     col3.plotly_chart(fig, use_container_width=True)
     
