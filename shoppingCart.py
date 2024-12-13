@@ -77,8 +77,10 @@ with tab2:
     fig = px.box(df, x="payment", y="delivery_date", title="Delivery Time by Payment",color_discrete_sequence=color1)
     col1.plotly_chart(fig, use_container_width=True)
 
-    numeric_df = df.select_dtypes(include=['number'])
-    fig = px.imshow(numeric_df.corr(), title="Correlation Heatmap",color_continuous_scale='YlOrBr')
+    df['order_date'] = pd.to_datetime(df['order_date'])
+    df['differnce'] = pd.to_numeric(df['differnce'])
+    df_1 = df.groupby('order_date').agg({'differnce': 'mean'}).reset_index()
+    fig = px.line(df_1, x="order_date", y="differnce", title="Mean Difference Over Order Dates", color_discrete_sequence=color1,markers=True)
     col3.plotly_chart(fig, use_container_width=True)
     
     numeric_df = df.select_dtypes(include=['number'])
